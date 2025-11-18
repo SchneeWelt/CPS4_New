@@ -41,17 +41,20 @@ class SensorServer:
         """
 
         """
+        Berechnung der benötigten Anzahl an Schritten
         
         Annahme: Motor kann insgesamt 500 Schritte drehen. 
         
         Grad  Schritte
         360   500
-        20    
+        1     
+        25    35
         
+        360   500
+        1     
+        90    125
         
         """
-
-
 
 
         # Gibt den Zustand der Lüfterklappe an
@@ -183,7 +186,7 @@ class SensorServer:
 
                 if self.ventState != STATE_CLOSED:
                     # Motor auf Ruheposition drehen
-                    self._rotiere_motor_um_schritte_anti_clockwise(25)
+                    self._rotiere_motor_um_schritte_anti_clockwise(35)
 
                     # State aktualisieren
                     self.ventState = STATE_CLOSED
@@ -198,9 +201,9 @@ class SensorServer:
                 if self.ventState != STATE_HALF_OPEN:
 
                     if self.ventState == STATE_CLOSED:  # Kommen wir von Closed?
-                        self.step.rotate(25)
+                        self._rotiere_motor_um_schritte_clockwise(35)
                     elif self.ventState == STATE_FULLY_OPEN:    # Kommen wir von Open?
-                        motor.rotate(-90)
+                        self._rotiere_motor_um_schritte_anti_clockwise(125)
 
                     self.ventState = STATE_HALF_OPEN
 
@@ -214,7 +217,7 @@ class SensorServer:
 
                 if self.ventState != STATE_FULLY_OPEN:
 
-                    motor.rotate(90)
+                    self._rotiere_motor_um_schritte_clockwise(125)
 
                     self.ventState = STATE_FULLY_OPEN
 
