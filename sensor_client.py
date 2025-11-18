@@ -19,11 +19,11 @@ class SensorClient:
     verarbeitet diesen Wert dann bei sich. ...
     """
 
-    def __init__(self,simulierte_verbindung = False):
+    def __init__(self, simulierte_verbindung = False):
 
         self.simulierte_verbindung = simulierte_verbindung;
-        server_port = 1300
-        server_address = '127.0.0.1'
+        server_port = 8000
+        server_address = '192.168.178.134'
 
         self.running = True
 
@@ -113,30 +113,32 @@ class SensorClient:
                 #Hier würde die tatsächliche Messung erfolgen
                 adc_value = adc.read_adc(adc_channel_0, gain=GAIN)
                 spannung = (adc_value / 32768.0) * 4.096
-                temperature = self._convert_measured_voltage_to_temperature(spannung)
+                temperature = str(self._convert_measured_voltage_to_temperature(spannung))
 
 
             # Temperaturdatum in Temperaturwert umrechnen
 
             # Temperaturwert an Server senden
-            temperatur_str = f"{temperature:.1f}"                        #f-String wird auf eine Nachkommastelle abgerundet
-            print(f"Send: {temperatur_str} °C")
+            # temperatur_str = f"{temperature:.1f}"                        #f-String wird auf eine Nachkommastelle abgerundet
+            # print(f"Send: {temperatur_str} °C")
+
             self.server_connection.send(temperature.encode('utf-8'))
 
             sleep(1000)                         # Nur jede Sekunde Messen.
 
-            def _convert_measured_voltage_to_temperature(self, measured_voltage):
 
-                """
-                Ausgabe in Grad Celsius, eingabe zwischen 0 und 5 Volt.
-                :param measured_voltage:
-                :return:
-                """
+    def _convert_measured_voltage_to_temperature(self, measured_voltage):
 
-                temperature = math.log((10_000 / measured_voltage) * (3300 - measured_voltage))
-                temperature = 1 / (
-                            0.001129148 + (0.000234125 + (0.000_000_0876741 * temperature * temperature)) * temperature)
-                return temperature - 237.15
+        """
+        Ausgabe in Grad Celsius, eingabe zwischen 0 und 5 Volt.
+        :param measured_voltage:
+        :return:
+        """
+
+        temperature = math.log((10_000 / measured_voltage) * (3300 - measured_voltage))
+        temperature = 1 / (
+                    0.001129148 + (0.000234125 + (0.000_000_0876741 * temperature * temperature)) * temperature)
+        return temperature - 237.15
 
 
 # Bei Ausführung des Scripts startet der Client automatisch.

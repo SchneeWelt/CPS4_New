@@ -63,7 +63,7 @@ class SensorServer:
         # Diese Flag gibt an, ob der Server noch läuft
         self.running = True
 
-        self.server = self._build_server(10000)
+        self.server = self._build_server(8000)
 
         # Genau eine Anfrage von einem Client entgegen nehmen.
         self.connected_client, self.addr = self.server.accept()
@@ -176,7 +176,7 @@ class SensorServer:
                 print("[fehler] Verbindung konnte nicht aufrecht gehalten werden...")
 
             # Message String vorab bearbeiten, um identifiezierung des Inhaltes zu erleichtern
-            erhaltene_temperatur = message_str.lower()
+            erhaltene_temperatur = int(message_str.lower())
 
             # Klappe ist geschlossen
             if erhaltene_temperatur <= SCHWELL_TEMPERATUR_LOW:

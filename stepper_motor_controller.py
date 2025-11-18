@@ -42,15 +42,16 @@ class StepperMotor:
 
         return deque(sequence)
 
+
     def _check_pigpio_existence(self):
 
-        if not isinstance(pi, pigpio.pi):
+        if not isinstance(self.pi, pigpio.pi):
             raise TypeError("Der Daemon pigpio.pi ist nicht instanziert!")
 
 
     def _set_all_available_pins_as_output(self, pins):
         for pin in pins:
-            pi.set_mode(pin, pigpio.OUTPUT)
+            self.pi.set_mode(pin, pigpio.OUTPUT)
 
 
     def set_stepper_delay(self, step_freq):                      # Methode zum Setzen der Schrittfrequenz
