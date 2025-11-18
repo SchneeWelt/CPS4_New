@@ -4,11 +4,6 @@ from time import sleep
 import math
 import Adafruit_ADS1x15
 
-adc = Adafruit_ADS1x15.ADS1115()
-adc_channel_0 = 0
-GAIN = 1  # für ±4.096V, passend für 3.3V Messbereich
-
-
 class SensorClient:
 
     """
@@ -21,12 +16,20 @@ class SensorClient:
 
     def __init__(self):
 
+        # Beginn Setup
+
+        # Sensor einrichten
+        self.adc = Adafruit_ADS1x15.ADS1115()
+        self.adc_channel_0 = 0
+        self.adc_gain = 1  # für ±4.096V, passend für 3.3V Messbereich
+
         server_port = 8001
         server_address = '192.168.178.134'
 
         self.running = True
 
-        # Verbindung zum Server alias: client Objekt
+        # Ende Setup
+        # Beginn Verbinungsaufbau
 
         self.server_connection = self._connect_to_server(server_port, server_address)
 
@@ -105,9 +108,13 @@ class SensorClient:
 
         while self.running:
 
-            adc_value = adc.read_adc(adc_channel_0, gain=GAIN)
-            spannung = (adc_value / 32768.0) * 4.096
-            temperatur_gemessen = str(self._convert_measured_voltage_to_temperature(spannung))
+            # Messspannung ermitteln
+            adc_messspannung = self.adc.read_adc(self.adc_channel_0, gain=self.adc_gain)
+            adc_messspannung = adc_messspannung / 32768.0
+            adc_messspannung = adc_messspannung * 4096
+
+            # Temperaturwert aus Messspannung berechnen
+            temperatur_gemessen = str(self._convert_measured_voltage_to_temperature(adc_messspannung))
 
             # Debug Ausgabe: Zeige messtemperatur auf Console an.
             print(f"Send: {temperatur_gemessen} °C")
@@ -131,7 +138,7 @@ class SensorClient:
 
         temperature = temperature - 237.15
 
-        return f"{temperature:.1f}"
+        return f"{temperature:.2f}"
 
 
 # Bei Ausführung des Scripts startet der Client automatisch.
