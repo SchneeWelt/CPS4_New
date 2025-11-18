@@ -23,9 +23,11 @@ class SensorClient:
         self.adc_channel_0 = 0
         self.adc_gain = 1  # für ±4.096V, passend für 3.3V Messbereich
 
+        # Servereigenschaften -> Dieser Client verbindet sich mit diesen Einstellungen mit einem Server
         server_port = 8001
         server_address = '192.168.178.134'
 
+        # Hält das Script und damit die Serververbindungen am laufen (receive und send)
         self.running = True
 
         # Ende Setup
@@ -91,6 +93,7 @@ class SensorClient:
                 break # Verwendung von break => Senden von "" schließt Verbindung ebenfalls
 
             print("\nNachricht vom Server: ", message_string)
+
             if (self.running):  # Nicht redundant, da Server hier die Flag auf False setzt, sobald Verbidung gekappt
                 print("> ", end="")
 

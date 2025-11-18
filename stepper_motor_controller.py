@@ -18,7 +18,7 @@ class StepperMotor:
         """
 
         # Sicherheitsabfragen
-        self._check_pigpio_existence()
+        # self._check_pigpio_existence()
 
         # Zuweisungen im Objektspeicher
         self.pi = pi

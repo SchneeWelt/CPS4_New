@@ -16,9 +16,9 @@ SCHWELL_TEMPERATUR_LOW = 25
 SCHWELL_TEMPERATUR_HIGH = 30
 
 # Konstanten, die den Zustand der Lüfterklappe beschreiben
-STATE_FULLY_OPEN = 5
-STATE_HALF_OPEN = 4
-STATE_CLOSED = 3
+STATE_FULLY_OPEN = 2
+STATE_HALF_OPEN = 1
+STATE_CLOSED = 0
 
 
 
@@ -53,6 +53,10 @@ class SensorServer:
         360   500
         1     
         90    125
+        
+        360   500
+        1     
+        65    90
         
         """
 
@@ -178,8 +182,18 @@ class SensorServer:
             # Message String vorab bearbeiten, um identifiezierung des Inhaltes zu erleichtern
             erhaltene_temperatur = float(message_str.lower())
 
-            print("Temperatur erhalten: ")
-            print(erhaltene_temperatur)
+            print(f"Temperatur erhalten: {erhaltene_temperatur} °C")
+
+
+            """
+            Die nachfolgende Schaltung funktioniert nur, wenn ein kontinuirlicher
+            Übergang existiert. Ein Springen von Lüfterklappe geschlossen zu 
+            Lüfterklappe Offen darf also nicht möglich sein. 
+            Deshalb ist es nötig, dass mit einer möglichst hohen Frequenz
+            die Temperatur erfasst wird, um starke Temperaturschwankungen
+            rechtzeitig zu erkennen, bevor ein Bereich übersprungen wird. 
+            """
+
 
             # Klappe ist geschlossen
             if erhaltene_temperatur <= SCHWELL_TEMPERATUR_LOW:
@@ -189,7 +203,7 @@ class SensorServer:
 
                 if self.ventState != STATE_CLOSED:
                     # Motor auf Ruheposition drehen
-                    self._rotiere_motor_um_schritte_anti_clockwise(35)
+                    self._rotiere_motor_um_schritte_counter_clockwise(35)
 
                     # State aktualisieren
                     self.ventState = STATE_CLOSED
@@ -206,7 +220,7 @@ class SensorServer:
                     if self.ventState == STATE_CLOSED:  # Kommen wir von Closed?
                         self._rotiere_motor_um_schritte_clockwise(35)
                     elif self.ventState == STATE_FULLY_OPEN:    # Kommen wir von Open?
-                        self._rotiere_motor_um_schritte_anti_clockwise(125)
+                        self._rotiere_motor_um_schritte_counter_clockwise(90)
 
                     self.ventState = STATE_HALF_OPEN
 
@@ -220,7 +234,7 @@ class SensorServer:
 
                 if self.ventState != STATE_FULLY_OPEN:
 
-                    self._rotiere_motor_um_schritte_clockwise(125)
+                    self._rotiere_motor_um_schritte_clockwise(90)
 
                     self.ventState = STATE_FULLY_OPEN
 
@@ -236,12 +250,12 @@ class SensorServer:
         :return:
         """
 
-        for i in range(25):
+        for i in range(anzahl_schritte):
             self.stepper_motor.do_clockwise_step()
 
 
 
-    def _rotiere_motor_um_schritte_anti_clockwise(self, anzahl_schritte):
+    def _rotiere_motor_um_schritte_counter_clockwise(self, anzahl_schritte):
 
         """
 
@@ -249,8 +263,8 @@ class SensorServer:
         :return:
         """
 
-        for i in range(25):
-            self.stepper_motor.do_anticlockwise_step()
+        for i in range(anzahl_schritte):
+            self.stepper_motor.do_counterclockwise_step()
 
 
 
