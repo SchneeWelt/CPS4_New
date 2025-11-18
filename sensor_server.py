@@ -40,6 +40,20 @@ class SensorServer:
         zu verbinden.
         """
 
+        """
+        
+        Annahme: Motor kann insgesamt 500 Schritte drehen. 
+        
+        Grad  Schritte
+        360   500
+        20    
+        
+        
+        """
+
+
+
+
         # Gibt den Zustand der Lüfterklappe an
         self.ventState = STATE_CLOSED
 
@@ -51,6 +65,8 @@ class SensorServer:
         # Genau eine Anfrage von einem Client entgegen nehmen.
         self.connected_client, self.addr = self.server.accept()
 
+        # Motor für die Bedienung aktivieren
+        self._setup_daemon()
         self.stepper_motor = self._build_stepper_motor()
 
         self._oeffne_verbindung()
@@ -149,11 +165,6 @@ class SensorServer:
         :return:
         """
 
-        # Motor für die Bedienung aktivieren
-        self._setup_daemon()
-
-        stepper_motor = self._build_stepper_motor()
-
         # Eingabeloop für Steuerung des Motors starten
         while self.running:
             message_str = self.connected_client.recv(1024).decode('utf-8')
@@ -167,11 +178,12 @@ class SensorServer:
             # Klappe ist geschlossen
             if erhaltene_temperatur <= SCHWELL_TEMPERATUR_LOW:
 
+                # Temperatur ist kleiner als Low, aber Motor hat
+                # Klappe noch nicht zu Low gedreht:
+
                 if self.ventState != STATE_CLOSED:
                     # Motor auf Ruheposition drehen
-                    motor.rotate(-25)
-
-                    # self.stepper_motor Welche FUnktion muss ich auf den Aufrufen?
+                    self._rotiere_motor_um_schritte_anti_clockwise(25)
 
                     # State aktualisieren
                     self.ventState = STATE_CLOSED
@@ -180,11 +192,14 @@ class SensorServer:
 
             elif erhaltene_temperatur <= SCHWELL_TEMPERATUR_HIGH:
 
+                # Temperatur ist auf Mid, aber Motor hat Klappe noch
+                # nicht zu Mid gedreht:
+
                 if self.ventState != STATE_HALF_OPEN:
 
-                    if self.ventState == STATE_CLOSED:
+                    if self.ventState == STATE_CLOSED:  # Kommen wir von Closed?
                         self.step.rotate(25)
-                    elif self.ventState == STATE_FULLY_OPEN:
+                    elif self.ventState == STATE_FULLY_OPEN:    # Kommen wir von Open?
                         motor.rotate(-90)
 
                     self.ventState = STATE_HALF_OPEN
@@ -194,6 +209,9 @@ class SensorServer:
 
             elif erhaltene_temperatur > SCHWELL_TEMPERATUR_HIGH:
 
+                # Temperatur ist auf High, aber Motor hat Klappe noch nicht
+                # ganz geöffnet:
+
                 if self.ventState != STATE_FULLY_OPEN:
 
                     motor.rotate(90)
@@ -201,6 +219,32 @@ class SensorServer:
                     self.ventState = STATE_FULLY_OPEN
 
                 print("[debug] Zustand: " + str(STATE_FULLY_OPEN))
+
+
+    def _rotiere_motor_um_schritte_clockwise(self, anzahl_schritte):
+
+        """
+        Dreht den Motor um die übergebene Anzahl an Schritten
+
+        :param anzahlSchritte:
+        :return:
+        """
+
+        for i in range(25):
+            self.stepper_motor.do_clockwise_step()
+
+
+
+    def _rotiere_motor_um_schritte_anti_clockwise(self, anzahl_schritte):
+
+        """
+
+        :param anzahl_schritte:
+        :return:
+        """
+
+        for i in range(25):
+            self.stepper_motor.do_anticlockwise_step()
 
 
 
