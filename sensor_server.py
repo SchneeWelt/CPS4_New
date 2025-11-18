@@ -176,7 +176,10 @@ class SensorServer:
                 print("[fehler] Verbindung konnte nicht aufrecht gehalten werden...")
 
             # Message String vorab bearbeiten, um identifiezierung des Inhaltes zu erleichtern
-            erhaltene_temperatur = int(message_str.lower())
+            erhaltene_temperatur = float(message_str.lower())
+
+            print("Temperatur erhalten: ")
+            print(erhaltene_temperatur)
 
             # Klappe ist geschlossen
             if erhaltene_temperatur <= SCHWELL_TEMPERATUR_LOW:
