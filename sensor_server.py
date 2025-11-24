@@ -6,7 +6,7 @@ import pigpio                                                   # GPIO Toolbox z
 from time import sleep                                          # Zeitmethoden
 from os import system
 
-from stepper_motor_controller import StepperMotor
+from stepper_motor_controller import StepperMotorController
 
 
 # Schwelltemperatur in Grad Celsius, ab der die Lüfterklappe halb geöffnet werden soll.
@@ -74,7 +74,7 @@ class SensorServer:
 
         # Motor für die Bedienung aktivieren
         self._setup_daemon()
-        self.stepper_motor = self._build_stepper_motor()
+        self.stepper_motor_controller = self._build_stepper_motor_controller()
 
         self._oeffne_verbindung()
 
@@ -176,7 +176,7 @@ class SensorServer:
         while self.running:
             message_str = self.connected_client.recv(1024).decode('utf-8')
 
-            if not message_str:
+            if not message_str:     # message_str == null?
                 print("[fehler] Verbindung konnte nicht aufrecht gehalten werden...")
 
             # Message String vorab bearbeiten, um identifiezierung des Inhaltes zu erleichtern
@@ -195,7 +195,7 @@ class SensorServer:
             """
 
 
-            # Klappe ist geschlossen
+            # Klappe soll geschlossen sein
             if erhaltene_temperatur <= SCHWELL_TEMPERATUR_LOW:
 
                 # Temperatur ist kleiner als Low, aber Motor hat
@@ -203,13 +203,14 @@ class SensorServer:
 
                 if self.ventState != STATE_CLOSED:
                     # Motor auf Ruheposition drehen
-                    self._rotiere_motor_um_schritte_counter_clockwise(35)
+                    self.stepper_motor_controller.rotiere_motor_counterclockwise(35)
 
                     # State aktualisieren
                     self.ventState = STATE_CLOSED
 
-                print("[debug] Zustand: " + str(STATE_CLOSED))
+                print("[debug] Klappenzustand: " + str(self.ventState))
 
+            # Klappe soll halb geöffnet sein
             elif erhaltene_temperatur <= SCHWELL_TEMPERATUR_HIGH:
 
                 # Temperatur ist auf Mid, aber Motor hat Klappe noch
@@ -218,15 +219,16 @@ class SensorServer:
                 if self.ventState != STATE_HALF_OPEN:
 
                     if self.ventState == STATE_CLOSED:  # Kommen wir von Closed?
-                        self._rotiere_motor_um_schritte_clockwise(35)
+                        self.stepper_motor_controller.rotiere_motor_clockwise(35)
                     elif self.ventState == STATE_FULLY_OPEN:    # Kommen wir von Open?
-                        self._rotiere_motor_um_schritte_counter_clockwise(90)
+                        self.stepper_motor_controller.rotiere_motor_counterclockwise(90)
 
                     self.ventState = STATE_HALF_OPEN
 
-                print("[debug] Zustand: " + str(STATE_HALF_OPEN))
+                print("[debug] Klappenzustand: " + str(self.ventState))
 
 
+            # Klappe soll ganz geöffnet sein
             elif erhaltene_temperatur > SCHWELL_TEMPERATUR_HIGH:
 
                 # Temperatur ist auf High, aber Motor hat Klappe noch nicht
@@ -234,38 +236,11 @@ class SensorServer:
 
                 if self.ventState != STATE_FULLY_OPEN:
 
-                    self._rotiere_motor_um_schritte_clockwise(90)
+                    self.stepper_motor_controller.rotiere_motor_clockwise(90)
 
                     self.ventState = STATE_FULLY_OPEN
 
-                print("[debug] Zustand: " + str(STATE_FULLY_OPEN))
-
-
-    def _rotiere_motor_um_schritte_clockwise(self, anzahl_schritte):
-
-        """
-        Dreht den Motor um die übergebene Anzahl an Schritten
-
-        :param anzahlSchritte:
-        :return:
-        """
-
-        for i in range(anzahl_schritte):
-            self.stepper_motor.do_clockwise_step()
-
-
-
-    def _rotiere_motor_um_schritte_counter_clockwise(self, anzahl_schritte):
-
-        """
-
-        :param anzahl_schritte:
-        :return:
-        """
-
-        for i in range(anzahl_schritte):
-            self.stepper_motor.do_counterclockwise_step()
-
+                print("[debug] Klappenzustand: " + str(self.ventState))
 
 
     def _setup_daemon(self):
@@ -275,7 +250,7 @@ class SensorServer:
         sleep(1.0)
 
 
-    def _build_stepper_motor(self):
+    def _build_stepper_motor_controller(self):
 
         steppins = [17, 18, 27, 22]  # GPIO Pins der Ansteuerschaltung. Diese Pins sind mit
                                      # dem Controller des Schrittmotors verbunden
@@ -288,10 +263,10 @@ class SensorServer:
             (1, 0, 0, 1)
         )
 
-        stepper_motor = StepperMotor(pigpio.pi(), steppins, fullstepsequence)
-        stepper_motor.set_stepper_delay(900)  # Achtung hier wird eine Frequenz übergeben! => schlechtes Design der Methode!
+        stepper_motor_controller = StepperMotorController(pigpio.pi(), steppins, fullstepsequence)
+        stepper_motor_controller.set_stepper_delay(900)  # Achtung hier wird eine Frequenz übergeben! => schlechtes Design der Methode!
 
-        return stepper_motor
+        return stepper_motor_controller
 
 
 # Server wird bei ausführend des Scripts automatisch richtig konfiguriert und gestartet

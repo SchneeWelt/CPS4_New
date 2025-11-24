@@ -3,7 +3,7 @@ from time import sleep                                          # Zeitmethoden
 from collections import deque                                   # Die einzelnen Schaltbefehle werden als Queue verwaltet
 from os import system                                           # Zugriff auf die Kommandozeile des Raspberry PI
 
-class StepperMotor:
+class StepperMotorController:
     def __init__(self, pi, stepp_pins, sequence):
 
         """
@@ -67,6 +67,42 @@ class StepperMotor:
 
         if step_freq > 0 and step_freq < 1500:                  # Nur gültige Frequenzen werden zugelassen.
             self.__delay_after_step = 1 / step_freq
+
+
+
+
+    def rotiere_motor_clockwise(self, anzahl_schritte):
+
+        """
+        Dreht den Motor um die übergebene Anzahl an Schritten
+        mit Uhrzeigersinn.
+
+        :param anzahl_schritte:
+        :return:
+        """
+
+        for i in range(anzahl_schritte):
+            self.do_clockwise_step()
+
+
+
+
+    def rotiere_motor_counterclockwise(self, anzahl_schritte):
+
+        """
+
+        Rotiert den Motor um die übergebene Anzahl an Schritte
+        entgegen dem Uhrzeigersinn.
+
+        :param anzahl_schritte:
+        :return:
+        """
+
+        for i in range(anzahl_schritte):
+            self.do_counterclockwise_step()
+
+
+
 
 
     def do_counterclockwise_step(self):
