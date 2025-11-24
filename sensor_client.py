@@ -20,8 +20,7 @@ class SensorClient:
 
         # Sensor einrichten
         self.adc = Adafruit_ADS1x15.ADS1115()
-        self.adc_channel_0 = 0
-        self.adc_gain = 1  # für ±4.096V, passend für 3.3V Messbereich
+
 
         # Servereigenschaften -> Dieser Client verbindet sich mit diesen Einstellungen mit einem Server
         server_port = 8001
@@ -112,7 +111,9 @@ class SensorClient:
         while self.running:
 
             # Messspannung ermitteln
-            adc_messspannung = self.adc.read_adc(self.adc_channel_0, gain=self.adc_gain)
+            adc_gain = 1                                                        # für ±4.096V, passend für 3.3V Messbereich
+            adc_channel_0 = 0
+            adc_messspannung = self.adc.read_adc(adc_channel_0, gain=adc_gain)
             adc_messspannung = adc_messspannung / 32768.0
             adc_messspannung = adc_messspannung * 4096
 
@@ -120,7 +121,7 @@ class SensorClient:
             temperatur_gemessen = str(self._convert_measured_voltage_to_temperature(adc_messspannung))
 
             # Debug Ausgabe: Zeige messtemperatur auf Console an.
-            print(f"Send: {temperatur_gemessen} °C")
+            print(f"Gemesse und an Server gesendet: {temperatur_gemessen} °C")
 
             # Temperaturwert an Server senden
             self.server_connection.send(temperatur_gemessen.encode('utf-8'))
@@ -133,7 +134,7 @@ class SensorClient:
         """
         Ausgabe in Grad Celsius, eingabe zwischen 0 und 5 Volt.
         :param measured_voltage:
-        :return:
+        :return: Temperatur in Grad Celsius mit 2 Nachkommastellen
         """
 
         temperature = math.log((10000 / measured_voltage) * (3300 - measured_voltage))
