@@ -10,10 +10,10 @@ from stepper_motor_controller import StepperMotorController
 
 
 # Schwelltemperatur in Grad Celsius, ab der die Lüfterklappe halb geöffnet werden soll.
-SCHWELL_TEMPERATUR_LOW = 25
+SCHWELL_TEMPERATUR_LOW = 24
 
 # Schwelltemperatur in Grad Celsius, ab der die Lüfterklappe ganz geöffnet werden soll.
-SCHWELL_TEMPERATUR_HIGH = 30
+SCHWELL_TEMPERATUR_HIGH = 26
 
 # Konstanten, die den Zustand der Lüfterklappe beschreiben
 STATE_FULLY_OPEN = 2
@@ -179,8 +179,9 @@ class SensorServer:
             if not message_str:     # message_str == null?
                 print("[fehler] Verbindung konnte nicht aufrecht gehalten werden...")
 
-            # Message String vorab bearbeiten, um identifiezierung des Inhaltes zu erleichtern
-            erhaltene_temperatur = float(message_str.lower())
+            temperatur = message_str.split(" ")[2]
+
+            erhaltene_temperatur = float(temperatur)
 
             print(f"Temperatur erhalten: {erhaltene_temperatur} °C")
 

@@ -25,6 +25,8 @@ class StepperMotorController:
         self.__delay_after_step = None                              # Periodendauer der Schrittfolge (geschützt als private)
         self.stepp_pins = stepp_pins
 
+        self.grad_verstarkung = 5
+
         self.deque = self._build_sequence_qeueue(sequence)
 
         # Funktionalität bei Objekterzeugung
@@ -81,7 +83,7 @@ class StepperMotorController:
         :return:
         """
 
-        for i in range(anzahl_schritte):
+        for i in range(anzahl_schritte * self.grad_verstarkung):
             self.do_clockwise_step()
 
 
@@ -98,7 +100,7 @@ class StepperMotorController:
         :return:
         """
 
-        for i in range(anzahl_schritte):
+        for i in range(anzahl_schritte * self.grad_verstarkung):
             self.do_counterclockwise_step()
 
 

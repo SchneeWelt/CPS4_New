@@ -23,8 +23,8 @@ class SensorClient:
 
 
         # Servereigenschaften -> Dieser Client verbindet sich mit diesen Einstellungen mit einem Server
-        server_port = 8001
-        server_address = '192.168.178.134'
+        server_port = 8002
+        server_address = '192.168.178.124'
 
         # Hält das Script und damit die Serververbindungen am laufen (receive und send)
         self.running = True
@@ -124,7 +124,7 @@ class SensorClient:
             print(f"Gemesse und an Server gesendet: {temperatur_gemessen} °C")
 
             # Temperaturwert an Server senden
-            self.server_connection.send(temperatur_gemessen.encode('utf-8'))
+            self.server_connection.send(f" Temp: {temperatur_gemessen}".encode('utf-8'))
 
             sleep(1)                           # Nur jede Sekunde Messen.
 
@@ -140,7 +140,7 @@ class SensorClient:
         temperature = math.log((10000 / measured_voltage) * (3300 - measured_voltage))
         temperature = 1 / (0.001129148 + (0.000234125 + (0.0000000876741 * temperature * temperature)) * temperature)
 
-        temperature = temperature - 237.15
+        temperature = temperature - (273.15)
 
         return f"{temperature:.2f}"
 
